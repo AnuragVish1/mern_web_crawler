@@ -1,1 +1,39 @@
 @import "tailwindcss";
+
+@theme {
+  --color-paper: #f7f4ed;
+  --color-card: #fffdf8;
+  --color-ink: #211e19;
+  --color-muted: #6f685c;
+  --color-rule: #ded7c8;
+  --color-accent: #2f5d3f;
+  --color-accent-ink: #24472f;
+  --color-accent-soft: #e6eee3;
+  --color-danger: #9c3b2a;
+
+  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-mono: "SFMono-Regular", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+
+html {
+  background-color: var(--color-paper);
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background-color: #d9e4d3;
+}
+
+/* Keep the native search clear button from crowding the field. */
+input[type="search"]::-webkit-search-cancel-button {
+  margin-right: 0.5rem;
+}
