@@ -8,6 +8,8 @@ bus.setMaxListeners(0); // default warns at 10
 
 export const api = Router();
 
+let job: boolean = false;
+
 api.get("/stats", async (_req, res) => {
   res.json({ pages: await Page.countDocuments() });
 });
@@ -43,9 +45,10 @@ api.post("/crawl", async (req, res) => {
     }
     maxPages = body.maxPages;
   }
-
+  job = true;
   const report = await crawl(startUrl.toString(), { maxPages }, bus);
   bus.emit('message', {type: 'crawlReport', report});
+  bus.emit('status', {type: 'crawlStatus', status: 'completed'});
   res.json(report);
 });
 
@@ -60,7 +63,7 @@ api.get("/search", async (req, res) => {
   res.json(await searchIndex(query));
 });
 
-api.get("/events", (req, res) => {
+api.get("/crawlDetailInfo/events", (req, res) => {
 
   res.set({
     "Content-Type": "text/event-stream",
@@ -80,4 +83,31 @@ api.get("/events", (req, res) => {
     bus.off('message', send)
   })
 
+})
+
+api.get("/crawlStatus/events", (req, res) => {
+  res.set({
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    "Connection": "keep-alive",
+  })
+  res.flushHeaders()
+
+  const send = (data: any) => {
+    res.write(`data: ${JSON.stringify(data)}\n\n`)
+  }
+
+  if (job) {
+    send({type: 'crawlStatus', status: 'running'})
+  }
+
+  if (!job) {
+    return res.end();
+  }
+
+  bus.on('status', send)
+  req.on('close', () => {
+    bus.off('status',send)
+  })
+  
 })
