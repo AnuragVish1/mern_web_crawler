@@ -1,5 +1,6 @@
+import type { EventEmitter } from "stream";
 import { fetchPage } from "./fetch.js";
-import type { IndexStore } from "./indexer.js";
+import { addPageToIndex } from "./indexer.js";
 import { parsePageContent } from "./parse.js";
 import type { CrawlFailure, CrawlReport, PageSummary, WebPage } from "./types.js";
 
@@ -22,8 +23,8 @@ function clampMaxPages(value: number | undefined): number {
 
 export async function crawl(
   startUrl: string,
-  store: IndexStore,
   options: CrawlOptions = {},
+  bus: EventEmitter
 ): Promise<CrawlReport> {
   const maxPages = clampMaxPages(options.maxPages);
 
@@ -57,9 +58,11 @@ export async function crawl(
       continue;
     }
 
-    const terms = store.addPage(page);
+    const terms = await addPageToIndex(page);
     termsIndexed += terms;
     pages.push({ url: page.url, title: page.title, terms });
+
+    bus.emit('message', {type: 'pageCrawled', page: {url: page.url, title: page.title, terms}});
 
     for (const link of page.links) {
       if (enqueued.has(link)) continue;

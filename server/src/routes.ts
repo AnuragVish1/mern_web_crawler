@@ -1,12 +1,16 @@
 import { Router } from "express";
 import { crawl } from "./crawler/crawler.js";
-import { IndexStore } from "./crawler/indexer.js";
 import { searchIndex } from "./crawler/search.js";
-
-
-const store = new IndexStore();
+import { Page } from "./models/Page.js";
+import { EventEmitter } from 'events';
+const bus = new EventEmitter();
+bus.setMaxListeners(0); // default warns at 10
 
 export const api = Router();
+
+api.get("/stats", async (_req, res) => {
+  res.json({ pages: await Page.countDocuments() });
+});
 
 api.post("/crawl", async (req, res) => {
   const body = req.body as { url?: unknown; maxPages?: unknown } | undefined;
@@ -40,11 +44,12 @@ api.post("/crawl", async (req, res) => {
     maxPages = body.maxPages;
   }
 
-  const report = await crawl(startUrl.toString(), store, { maxPages });
+  const report = await crawl(startUrl.toString(), { maxPages }, bus);
+  bus.emit('message', {type: 'crawlReport', report});
   res.json(report);
 });
 
-api.get("/search", (req, res) => {
+api.get("/search", async (req, res) => {
   const query = typeof req.query.q === "string" ? req.query.q.trim() : "";
 
   if (query.length === 0) {
@@ -52,5 +57,27 @@ api.get("/search", (req, res) => {
     return;
   }
 
-  res.json(searchIndex(query, store));
+  res.json(await searchIndex(query));
 });
+
+api.get("/events", (req, res) => {
+
+  res.set({
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    "Connection": "keep-alive",
+  })
+
+  res.flushHeaders()
+
+  const send = (data: any) => {
+    res.write(`data: ${JSON.stringify(data)}\n\n`)
+  }
+
+  bus.on('message', send)
+
+  req.on('close', () => {
+    bus.off('message', send)
+  })
+
+})

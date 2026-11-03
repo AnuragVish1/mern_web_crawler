@@ -1,7 +1,8 @@
-import type { IndexStore } from "./indexer.js";
+import { Page } from "../models/Page.js";
 import { tokenize } from "./indexer.js";
 import type { SearchMatch, SearchResponse } from "./types.js";
 
+/** Same stop-word list as searchIndex.go. */
 const STOP_WORDS = new Set([
   "a", "an", "the",
   "and", "or", "but",
@@ -17,28 +18,26 @@ const STOP_WORDS = new Set([
   "his", "her", "their", "our", "your", "my",
 ]);
 
-
-export function searchIndex(query: string, store: IndexStore): SearchResponse {
+export async function searchIndex(query: string): Promise<SearchResponse> {
   const terms = [...new Set(tokenize(query).filter((word) => !STOP_WORDS.has(word)))];
 
-  const matches = new Set<string>();
-  for (const term of terms) {
-    const bucket = store.index.get(term);
-    if (!bucket) continue;
-
-    for (const url of bucket) {
-      matches.add(url);
-    }
+  if (terms.length === 0) {
+    return { terms, results: [], count: 0 };
   }
 
-  const results: SearchMatch[] = [];
-  for (const url of matches) {
-    const page = store.pages.get(url);
-    if (!page) continue;
-    results.push({ url: page.url, title: page.title, terms: page.terms });
-  }
+    const pages = await Page.find(
+      { terms: { $in: terms } },
+      { url: 1, title: 1, termCount: 1, _id: 0 },
+    )
+      .sort({ url: 1 })
+      .limit(100)
+      .lean();
 
-  results.sort((a, b) => a.url.localeCompare(b.url));
+  const results: SearchMatch[] = pages.map((page) => ({
+    url: page.url,
+    title: page.title,
+    terms: page.termCount,
+  }));
 
   return { terms, results, count: results.length };
 }
