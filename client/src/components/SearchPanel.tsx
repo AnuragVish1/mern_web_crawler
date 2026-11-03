@@ -3,7 +3,13 @@ import { Link } from "react-router-dom";
 import { searchIndex, type SearchResponse } from "../api";
 import ResultCard from "./ResultCard";
 
-export default function SearchPanel({ hasIndex }: { hasIndex: boolean }) {
+export default function SearchPanel({
+  hasIndex,
+  statsChecked,
+}: {
+  hasIndex: boolean;
+  statsChecked: boolean;
+}) {
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState<SearchResponse | null>(null);
   const [submitted, setSubmitted] = useState("");
@@ -30,12 +36,10 @@ export default function SearchPanel({ hasIndex }: { hasIndex: boolean }) {
 
   return (
     <div>
-      <h2 id="search-heading" className="font-serif text-2xl tracking-tight">
+      <h2 id="search-heading" className="font-nunito text-2xl font-extrabold">
         Search the index
       </h2>
-      <p className="mt-2 max-w-prose text-sm leading-relaxed text-muted">
-        Look up words from the crawled pages. Matching is exact and case-insensitive.
-      </p>
+      
 
       <form onSubmit={handleSubmit} className="mt-7 flex flex-col gap-2 sm:flex-row">
         <label htmlFor="query" className="sr-only">
@@ -51,7 +55,7 @@ export default function SearchPanel({ hasIndex }: { hasIndex: boolean }) {
           onChange={(event) => setQuery(event.target.value)}
           placeholder={hasIndex ? "Try a word you saw on the page" : "Crawl a site first"}
           autoComplete="off"
-          className="h-12 min-w-0 flex-1 rounded-sm border border-rule bg-card px-4 text-base text-ink outline-none transition placeholder:text-muted/60 focus:border-accent focus:ring-2 focus:ring-accent/15 disabled:cursor-not-allowed disabled:opacity-60"
+          className="h-12 min-w-0 flex-1 rounded-sm border border-rule bg-card px-4 text-base font-nunito text-ink outline-none transition placeholder:text-muted/60 focus:border-accent focus:ring-2 focus:ring-accent/15 disabled:cursor-not-allowed disabled:opacity-60"
         />
         <button
           type="submit"
@@ -62,10 +66,7 @@ export default function SearchPanel({ hasIndex }: { hasIndex: boolean }) {
         </button>
       </form>
 
-      <p className="mt-3 text-xs leading-relaxed text-muted">
-        Terms are joined with OR, so a page only needs one matching word. Common words such as
-        &ldquo;the&rdquo; and &ldquo;and&rdquo; are ignored.
-      </p>
+     
 
       {error ? (
         <p role="alert" className="mt-5 border-l-2 border-danger pl-3 text-sm text-danger">
@@ -74,15 +75,19 @@ export default function SearchPanel({ hasIndex }: { hasIndex: boolean }) {
       ) : null}
 
       {!hasIndex ? (
-        <div className="mt-9 rounded-sm border border-dashed border-rule px-5 py-6">
-          <p className="text-sm">The index is empty.</p>
-          <Link
-            to="/crawl"
-            className="mt-3 inline-block text-sm font-medium text-accent underline-offset-4 transition hover:underline"
-          >
-            Crawl a site to build the index →
-          </Link>
-        </div>
+        statsChecked ? (
+          <div className="mt-9 rounded-sm border border-dashed border-rule px-5 py-6">
+            <p className="text-sm">The index is empty.</p>
+            <Link
+              to="/crawl"
+              className="mt-3 inline-block text-sm font-medium text-accent underline-offset-4 transition hover:underline"
+            >
+              Crawl a site to build the index →
+            </Link>
+          </div>
+        ) : (
+          <p className="mt-9 text-sm text-muted">Checking the index…</p>
+        )
       ) : (
         <div aria-live="polite" className="mt-9">
           {response === null ? (
@@ -104,7 +109,7 @@ export default function SearchPanel({ hasIndex }: { hasIndex: boolean }) {
             </div>
           ) : (
             <>
-              <div className="flex flex-wrap items-baseline justify-between gap-2 border-t border-rule pt-5">
+              <div className="flex flex-wrap items-baseline justify-between gap-2 border-t border-rule pt-5 font-nunito">
                 <p className="text-sm">
                   {response.count} result{response.count === 1 ? "" : "s"} for{" "}
                   <span className="font-medium">“{submitted}”</span>

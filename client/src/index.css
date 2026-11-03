@@ -1,3 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Chango&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Coiny&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+
 @import "tailwindcss";
 
 @theme {
@@ -6,15 +11,20 @@
   --color-ink: #211e19;
   --color-muted: #6f685c;
   --color-rule: #ded7c8;
-  --color-accent: #2f5d3f;
+  --color-accent: #d65f20;
   --color-accent-ink: #24472f;
   --color-accent-soft: #e6eee3;
   --color-danger: #9c3b2a;
-
+  --font-nunito: "Nunito", sans-serif;
+  --font-inter: "Inter", sans-serif;
+  --font-coin: "Coiny", cursive;
+  --font-chango: "Chango", cursive;
   --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   --font-mono: "SFMono-Regular", ui-monospace, "Cascadia Mono", Consolas, monospace;
 }
+
+
 
 html {
   background-color: var(--color-paper);

@@ -29,6 +29,10 @@ export interface SearchResponse {
   count: number;
 }
 
+export interface Stats {
+  pages: number;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, init);
   const body: unknown = await response.json().catch(() => null);
@@ -54,4 +58,8 @@ export function crawlSite(url: string, maxPages: number): Promise<CrawlReport> {
 
 export function searchIndex(query: string): Promise<SearchResponse> {
   return request<SearchResponse>(`/api/search?q=${encodeURIComponent(query)}`);
+}
+
+export function getStats(): Promise<Stats> {
+  return request<Stats>("/api/stats");
 }
